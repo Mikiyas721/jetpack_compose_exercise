@@ -1,0 +1,315 @@
+**********************
+***** Foundation *****
+**********************
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Thinking in compose(URL: https://developer.android.com/jetpack/compose/mental-model)
+- Jetpack is a modern declarative UI toolkit for android.
+
+#The declarative programming paradigm:
+- Imperative programming creates the likelihood of creating errors like 
+       - Forgetting to update one of the views that show a piece of data that is rendered multiple places.
+	   - Easy to create illegal state like trying to update a view that was just deleted.
+- In declarative programming paradigm, the entire screen is conceptually regenerated from scratch upon state change
+- To mitigate the cost(computing power, performance and battery usage) of regenerating the entire screen, compose intellegently chooses 
+which part of the UI needs to be regenerated.
+
+#A Simple composable function
+- A composable function is used to build UI. It takes data and emits UI elements.
+- Composable functions are 1. Annotated by @Composable 
+                           2. Accept data
+                           3. Emit UI. Does not return anything
+						   4. Fast, idempotent and free of Side-effect
+						   
+#The declarative paradigm shift
+- In Compose's declarative approach, widgets are relatively stateless and do not expose setter or getter functions.
+- Recomposition - the process that occurs when UI is redrawn as a result of state change.
+
+#Dynamic Content
+- Because composable functions are written in Kotlin instead of XML, they can be as dynamic as any other Kotlin code.
+- Composables have the full flexibility of the underlying language. This power and flexibility is one of the key advantages of Jetpack Compose.
+
+#Recomposition
+- Never depend on side-effects, any change that is visible to the rest of your app,from executing composable functions.
+- Be aware of the following things when building a composable.
+    - Composable functions can execute in any order.
+    - Composable functions can execute in parallel.
+    - Recomposition skips as many composable functions and lambdas as possible.
+    - Recomposition is optimistic and may be canceled.
+    - A composable function might be run quite frequently, as often as every frame of an animation.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#State and Jetpack Compose(URL: https://developer.android.com/jetpack/compose/state)
+#State and composition
+- A state before, the UI changes whenever the composable is envoked with a new argument. These arguments are representation of UI state, as a result 
+things like TextField do not update automatically without explicitly being told the new state. 
+
+#States in composables
+- There are three ways to declare a "MutableState" object in a composable:
+    val mutableState = remember { mutableStateOf(default) }
+    var value by remember { mutableStateOf(default) }
+    val (value, setValue) = remember { mutableStateOf(default) }
+- While remember helps you retain state across recompositions, the state is not retained across configuration changes.
+For this, you must use "rememberSaveable"
+
+#Other supported types
+- Jetpack Compose doesn't require that you use MutableState<T> to hold state. 
+Jetpack Compose supports other observable types. Before reading another observable type in Jetpack Compose, 
+you must convert it to a State<T> so that Jetpack Compose can automatically recompose when the state changes.
+Compose ships with functions to create State<T> from common observable types used in Android apps:
+   -  LiveData
+   -  Flow
+   -  RxJava2
+- It is recommended to use observable data holders like State<List<T>> and immutable listOf()
+
+#Stateful versus stateless
+- A composable that uses remember to state internally is called a stateful composable.
+- This can be useful in situations where a caller doesn't need to control the state and can use it without having to manage the state themselves.
+However, composables with internal state tend to be less reusable and harder to test.
+- A composable that does not hold any state is called stateless composable.
+An easy way to achieve stateless is by using state hoisting.
+
+#State hoisting
+- State hoisting in Compose is a pattern of moving state to a composable's caller to make a composable stateless. 
+The general pattern for state hoisting in Jetpack Compose is to replace the state variable with two parameters:-
+   - value: T: the current value to display
+   - onValueChange: (T) -> Unit: an event that requests the value to change, where T is the proposed new value
+- Among the several important properties of a hoisted State, some of the most important ones are:
+   - Interceptable
+   - Decoupling
+- The pattern where the state goes down, and events go up is called a unidirectional data flow.
+
+#Restoring state in Compose
+#Ways to store state 
+   - Parcelize
+   - MapSaver
+   - ListSaver   
+   
+#Managing state in Compose
+   - Composable - Simple UI element state managment 
+   - State holders - Complex UI element state managment
+   - Architecture Componenets ViewModels - Providing access to the business logic and UI state 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Lifecycle of composables(URL: https://developer.android.com/jetpack/compose/lifecycle)
+#Lifecycle overview
+- Composition describes the UI of your app and is produced by running composables.
+- Initial Composition -> Recomposition -> Leave Composition
+- A Composable's' lifecycle is simpler than the lifecycle of views, activities, and fragments. 
+When a composable needs to manage or interact with external resources that do have a more complex lifecycle, you should use effects.
+
+#Anatomy of a composable in Composition
+- The instance of a composable in Composition is identified by its "call site".
+- The "call site" is the source code location in which a composable is called. This influences its place in Composition, and therefore, the UI tree.
+
+#Add extra information to help smart recompositions
+- When calling a composable multiple times from the same call site, Compose doesn’t have any information to uniquely identify each call to that composable,
+so the "execution order" is used in addition to the "call site" in order to keep the instances distinct.
+- The "key" composable is used to tell the runtime what values you want to use to identify a given part of the tree.
+- The value for a key does not need to be globally unique, it needs to only be unique amongst the invocations of composables at the call site.
+- Some composables have built-in support for the key composable. For example, LazyColumn accepts specifying a custom key in the items DSL.
+
+#Skipping if the inputs haven't changed
+- If a composable is already in the Composition, it can skip recomposition if all the inputs are stable and haven't changed.
+
+- A stable type must comply with the following contract:
+   - The result of equals for two instances will forever be the same for the same two instances.
+   - If a public property of the type changes, Composition will be notified.
+   - All public property types are also stable.
+- All primitive value types, Strings and All Function types (lambdas) are stable because they are immutable.
+- If Compose is not able to infer that a type is stable, but you want to force Compose to treat it as stable, mark it with the "@Stable annotation".
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Compose modifiers(URL: https://developer.android.com/jetpack/compose/modifiers)
+- Create a modifier by calling one of the "Modifier class functions".
+- You can "chain" these functions together to compose them.
+- It's a best practice to have all of your Composables accept a modifier parameter, and pass that modifier to its first child that emits UI.
+
+#Order of modifiers matters
+- Since each function makes changes to the Modifierreturned by the previous function, the sequence affects the final result.
+
+#Built-in modifiers
+#padding and size
+- By default, layouts provided in Compose wrap their children. However, you can set a size by using the size modifier.
+- Note that the size you specified might not be respected if it does not satisfy the constraints coming from the layout's parent. 
+- If you require the composable size to be fixed regardless of the incoming constraints, use the "requiredSize" modifier:
+- When a child does not respect its constraints, the layout system will hide this from the parent. 
+The parent will see the child's width and height values as if they were coerced in the constraints provided by the parent. 
+- The layout system will then center the child within the space allocated by the parent under the assumption that the child respected the constraints.
+Developers can override this centering behaviour by applying "wrapContentSize" modifiers to the child.
+- "fillMaxWidth", "fillMaxHeight", "fillMaxSize", "padding", "paddingFromBaseline"
+
+#offset
+- To position a layout relative to its original position, add the offset modifier and set the offset in the x and y axis.
+- The "difference" between padding and offset is that adding an offset to a composable does not change its measurements.
+
+#Type safety in compose
+- "matchParentSize"
+
+#weight in Row and Column
+- "weight"
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Side-effects in Compose(URL: https://developer.android.com/jetpack/compose/side-effects)
+#State and effect use cases
+- An "effect" is a composable function that doesn't emit UI and causes side effects to run when a composition completes.
+
+#LaunchedEffect: run suspend functions in the scope of a composable
+
+#rememberCoroutineScope: obtain a composition-aware scope to launch a coroutine outside a composable
+- Also use rememberCoroutineScope when you want to control the life cycle of a coroutine manually.
+
+#rememberUpdatedState: reference a value in an effect that shouldn't restart if the value changes
+
+#DisposableEffect: effects that require cleanup
+- A DisposableEffect must include an onDispose clause as the final statement in its block of code.
+
+#SideEffect: publish Compose state to non-compose code
+
+#produceState: convert non-Compose state into Compose state
+- Composables with a return type should be named the way you'd name a normal Kotlin function, starting with a lowercase letter.
+
+#derivedStateOf: convert one or multiple state objects into another state
+
+#snapshotFlow: convert Compose's State into Flows
+
+#Restarting effects
+
+#Constants as keys
+- You can use a constant like true as an effect key to make it follow the lifecycle of the call site. 
+However, before doing that, think twice and make sure that's what you need.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Jetpack Compose Phases(URL: https://developer.android.com/jetpack/compose/phases)
+#The three phases of a frame
+   - Composition                              -> What UI to show
+   - Layout (Measurement and placement)       -> Where to place UI
+   - Drawing                                  -> How to render
+
+#State reads
+#Phased state reads
+- What happens when a State value is read within each phase
+#1. Composition
+- State reads within a @Composable function or lambda block affect composition and potentially the subsequent phases.
+- Depending on the result of composition, Compose UI may or may not run the layout and drawing phases.
+
+#2. Layout
+- The measurement step runs the measure lambda passed to the Layout composable, the "MeasureScope.measure" method of the LayoutModifier interface, and so on.
+The placement step runs the placement block of the layout function, the lambda block of Modifier.offset { … }, and so on.
+
+#3. Drawing
+- State reads during drawing code affect the drawing phase. When the state value changes, Compose UI runs only the draw phase.
+
+#Optimizing state reads
+- As Compose performs localized state read tracking, we can minimize the amount of work performed by reading each state in an appropriate phase.
+Example: using assigning offset in the composition phase vs in the layout phase.
+- Try to localize state reads to the lowest possible phase, enabling Compose to perform the minimum amount of work.
+
+#Recomposition loop (cyclic phase dependency)
+- Dont use the state as an input to some layout modifier
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Jetpack Compose architectural layering(URL: https://developer.android.com/jetpack/compose/layering)
+#Layers
+- The major layer of Jetpack Compose are: 
+   - Material    -> Implementation of the Material Design system for Compose UI, providing a theming system, styled components, ripple indications, icons.
+   - Foundation  -> Provides design system agnostic building blocks for Compose UI, like Row and Column, LazyColumn, recognition of particular gestures, etc.
+   - UI          -> Fundamentals of the UI toolkit, such as LayoutNode, Modifier, input handlers, custom layouts, and drawing
+   - Runtime     -> Fundamentals of the composable runtime such as @Composable, SideEffect, remember, mutableStateOf
+- Lowest layer being the Runtime.
+
+#Design Principles
+- A guiding principle for Jetpack Compose is to provide small, focused pieces of functionality that can be composed together
+
+This design principles has a number of advantages:-
+#Control    
+- Move to lower layer for more control with a trade off with complexity
+
+#Customization
+- Jetpack Compose reserves the simplest names for the highest level components.
+
+#Picking the right abstraction
+- As a rule, prefer building on the highest-level component which offers the functionality you need in order to benefit from the best practices they include.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+**********************
+***** Design *********
+**********************
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Compose layout basics(URL: https://developer.android.com/jetpack/compose/layouts/basics)
+
+- Compose transforms state into UI by following these steps: 
+   State --> Composition --> Layout --> Drawing --> UI 
+
+#Goals of Layouts: 1. High Performance
+                   2. Ability to write custom layouts
+
+- A composable function is a function emitting Unit that describes some part of your UI.
+
+#Standard layout components: 1. Column -> Places items vertically
+                           2. Row    -> Places items horizontally
+                           3. Box    -> Places items on top of one another
+
+- Column and Row children position are managed by arrangment along the axis of placement 
+and alignement along the crossaxis of placement, that is:
+
+Column -> verticalArrangement and horizontalAlignement
+Row    -> horizontalArrangement and verticalAlignement
+ 
+#The layout model: 
+- Each node is first asked to measure itself, then measure any children recursively, 
+passing size constraints down the tree to children. 
+- Then, leaf nodes are sized and placed, with the resolved sizes and placement instructions passed back up the tree.
+
+#Performance: 
+- Compose achieves high performance by measuring child only onces.
+
+- Since measurement and placement are distinct sub-phases of the layout pass, 
+any changes that only affects placement of items, not measurement, can be executed separately.
+
+#Using modifiers in your layouts:
+
+#Responsive layouts:
+- In order to know the constraints coming from the parent and design the layout accordingly, you can use a BoxWithConstraints.
+- The measurement constraints can then be used to compose different layout for different screen configuration.
+
+#Slot-based layouts:
+- Compose provides a large variety of composables based on Material Design.
+- Slots leave an empty space in the UI for the developer to fill as they wish.
+- Composables usually take a content composable lambda. Slot APIs expose multiple content parameters for specific uses.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Material Components and layouts (URL: https://developer.android.com/jetpack/compose/layouts/basics)
+
+Button
+Scaffold
+TopAppBar
+BottomAppBar
+BottomNavigation
+FloatingActionButton
+ExtendedFloatingActionButton
+Snackbars
+ModalDrawers
+BottomSheetScaffold
+ModalBottomSheetLayout
+BackdropScaffold
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
