@@ -1,0 +1,64 @@
+**********************
+***** Design *********
+**********************
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Compose layout basics(URL: https://developer.android.com/jetpack/compose/layouts/basics)
+
+- Compose transforms state into UI by following these steps: 
+   State --> Composition --> Layout --> Drawing --> UI 
+
+#Goals of Layouts: 1. High Performance
+                   2. Ability to write custom layouts
+
+- A composable function is a function emitting Unit that describes some part of your UI.
+
+#Standard layout components: 1. Column -> Places items vertically
+                           2. Row    -> Places items horizontally
+                           3. Box    -> Places items on top of one another
+
+- Column and Row children position are managed by arrangment along the axis of placement 
+and alignement along the crossaxis of placement, that is:
+
+Column -> verticalArrangement and horizontalAlignement
+Row    -> horizontalArrangement and verticalAlignement
+ 
+#The layout model: 
+- Each node is first asked to measure itself, then measure any children recursively, 
+passing size constraints down the tree to children. 
+- Then, leaf nodes are sized and placed, with the resolved sizes and placement instructions passed back up the tree.
+
+#Performance: 
+- Compose achieves high performance by measuring child only onces.
+
+- Since measurement and placement are distinct sub-phases of the layout pass, 
+any changes that only affects placement of items, not measurement, can be executed separately.
+
+#Using modifiers in your layouts:
+
+#Responsive layouts:
+- In order to know the constraints coming from the parent and design the layout accordingly, you can use a BoxWithConstraints.
+- The measurement constraints can then be used to compose different layout for different screen configuration.
+
+#Slot-based layouts:
+- Compose provides a large variety of composables based on Material Design.
+- Slots leave an empty space in the UI for the developer to fill as they wish.
+- Composables usually take a content composable lambda. Slot APIs expose multiple content parameters for specific uses.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Material Components and layouts (URL: https://developer.android.com/jetpack/compose/layouts/basics)
+
+Button
+Scaffold
+TopAppBar
+BottomAppBar
+BottomNavigation
+FloatingActionButton
+ExtendedFloatingActionButton
+Snackbars
+ModalDrawers
+BottomSheetScaffold
+ModalBottomSheetLayout
+BackdropScaffold
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+

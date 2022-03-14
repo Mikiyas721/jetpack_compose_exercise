@@ -36,6 +36,7 @@ which part of the UI needs to be regenerated.
     - Recomposition skips as many composable functions and lambdas as possible.
     - Recomposition is optimistic and may be canceled.
     - A composable function might be run quite frequently, as often as every frame of an animation.
+	
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #State and Jetpack Compose(URL: https://developer.android.com/jetpack/compose/state)
 #State and composition
@@ -87,6 +88,7 @@ The general pattern for state hoisting in Jetpack Compose is to replace the stat
    - Composable - Simple UI element state managment 
    - State holders - Complex UI element state managment
    - Architecture Componenets ViewModels - Providing access to the business logic and UI state 
+   
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Lifecycle of composables(URL: https://developer.android.com/jetpack/compose/lifecycle)
 #Lifecycle overview
@@ -115,6 +117,7 @@ so the "execution order" is used in addition to the "call site" in order to keep
    - All public property types are also stable.
 - All primitive value types, Strings and All Function types (lambdas) are stable because they are immutable.
 - If Compose is not able to infer that a type is stable, but you want to force Compose to treat it as stable, mark it with the "@Stable annotation".
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Compose modifiers(URL: https://developer.android.com/jetpack/compose/modifiers)
 - Create a modifier by calling one of the "Modifier class functions".
@@ -144,6 +147,7 @@ Developers can override this centering behaviour by applying "wrapContentSize" m
 
 #weight in Row and Column
 - "weight"
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Side-effects in Compose(URL: https://developer.android.com/jetpack/compose/side-effects)
 #State and effect use cases
@@ -173,6 +177,7 @@ Developers can override this centering behaviour by applying "wrapContentSize" m
 #Constants as keys
 - You can use a constant like true as an effect key to make it follow the lifecycle of the call site. 
 However, before doing that, think twice and make sure that's what you need.
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Jetpack Compose Phases(URL: https://developer.android.com/jetpack/compose/phases)
 #The three phases of a frame
@@ -201,6 +206,7 @@ Example: using assigning offset in the composition phase vs in the layout phase.
 
 #Recomposition loop (cyclic phase dependency)
 - Dont use the state as an input to some layout modifier
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Jetpack Compose architectural layering(URL: https://developer.android.com/jetpack/compose/layering)
 #Layers
@@ -223,93 +229,69 @@ This design principles has a number of advantages:-
 
 #Picking the right abstraction
 - As a rule, prefer building on the highest-level component which offers the functionality you need in order to benefit from the best practices they include.
------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Semantics in Compose(URL: https://developer.android.com/jetpack/compose/semantics)
+- Next to the Composition, there exists a parallel tree, called the Semantics tree.
+- This tree describes your UI in an alternative manner that is understandable for Accessibility services and for the Testing framework. 
+- If your app consists of composables and modifiers from the Compose foundation and material library, 
+the Semantics tree is automatically filled and generated for you. 
+- However when you’re adding custom low-level composables, you will have to manually provide its semantics.
+
+#Semantic Properties
+- Composables and modifiers that are built on top of the Compose foundation library already set the relevant properties for you. 
+Optionally, you can set or override the properties yourself with the "semantics" and "clearAndSetSemantics" modifiers.
+- To visualize the Semantics tree, we can use the "Layout Inspector Tool" or use the "printToLog()" method inside our tests. 
+- Keeping track of the semantics properties of each composable in your app unlocks a lot of powerful possibilities. Some examples:
+   - Talkback uses the properties to read aloud what’s shown on the screen and lets the user smoothly interact with it.
+   - The Testing framework uses the properties to find nodes, interact with them, and make assertions.
+   
+#Merged and unmerged Semantics tree
+- To convey the correct meaning of what is shown on the screen, it is also useful to merge certain sub-trees of nodes and treat them as one.
+- As a rule of thumb, each node in this tree represents a focusable element when using Accessibility services.
+- Composables and modifiers can indicate that they want to merge their descendants' semantics properties by calling 
+"Modifier.semantics (mergeDescendants = true){}".
+- "clickable", "toggleable", "ListItem" ... internally have the mergeDesendants property set to true.
+
+#Inspecting the tree
+- It is possible to inspect both merged and unmerged trees.
+- The Testing framework uses the merged tree by default.
+
+#Merging behavior
+- An important note is that descendants that themselves have set "mergeDescendants = true" are not included in the merge 
+and are shown separately in the merge tree.
+
+#Adapting the Semantics tree
+- When you’re creating your own custom components, it is relevant that you can override or clear certain semantics properties, 
+or change the merging behavior of the tree.  
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-**********************
-***** Design *********
-**********************
------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Compose layout basics(URL: https://developer.android.com/jetpack/compose/layouts/basics)
+#Locally scoped data with CompositionLocal(URL: https://developer.android.com/jetpack/compose/compositionlocal)
+- CompositionLocal is a tool for passing data down through the Composition implicitly.
 
-- Compose transforms state into UI by following these steps: 
-   State --> Composition --> Layout --> Drawing --> UI 
+#Introducing CompositionLocal
+- To support not needing to pass data as an explicit parameter dependency to most composables, Compose offers CompositionLocal 
+which allows you to create tree-scoped named objects that can be used as an implicit way to have data flow through the UI tree.
+- "CompositionLocal" is what the Material theme uses under the hood. 
+- MaterialTheme is an object that provides three CompositionLocal instances--"colors", "typography" and "shapes"--allowing you to 
+retrieve them later in any descendant part of the Composition.
+- CompositionLocal objects or constants are usually prefixed with "Local" to allow better discoverability with auto-complete in the IDE.
 
-#Goals of Layouts: 1. High Performance
-                   2. Ability to write custom layouts
+#Creating your own CompositionLocal
 
-- A composable function is a function emitting Unit that describes some part of your UI.
+#Deciding whether to use CompositionLocal
+- A CompositionLocal should have a good "default value".
+- Avoid CompositionLocal for concepts that aren't thought as tree-scoped or sub-hierarchy scoped. 
+A CompositionLocal makes sense when it can be potentially used by any descendant, "not by a few" of them.
 
-#Standard layout components: 1. Column -> Places items vertically
-                           2. Row    -> Places items horizontally
-                           3. Box    -> Places items on top of one another
+#Creating a CompositionLocal
+- There are two APIs to create a CompositionLocal:
+   - compositionLocalOf        -> recomposes places where the value is read
+   - staticCompositionLocalOf  -> recomposes the entire content lambda where the CompositionLocal is provided - use where value change is highly unlikely
+   
+#Providing values to a CompositionLocal
+- The "CompositionLocalProvider" composable binds values to CompositionLocal instances for the given hierarchy. 
+To provide a new value to a CompositionLocal, use the "provides" infix function that associates a CompositionLocal key to a value  
 
-- Column and Row children position are managed by arrangment along the axis of placement 
-and alignement along the crossaxis of placement, that is:
-
-Column -> verticalArrangement and horizontalAlignement
-Row    -> horizontalArrangement and verticalAlignement
- 
-#The layout model: 
-- Each node is first asked to measure itself, then measure any children recursively, 
-passing size constraints down the tree to children. 
-- Then, leaf nodes are sized and placed, with the resolved sizes and placement instructions passed back up the tree.
-
-#Performance: 
-- Compose achieves high performance by measuring child only onces.
-
-- Since measurement and placement are distinct sub-phases of the layout pass, 
-any changes that only affects placement of items, not measurement, can be executed separately.
-
-#Using modifiers in your layouts:
-
-#Responsive layouts:
-- In order to know the constraints coming from the parent and design the layout accordingly, you can use a BoxWithConstraints.
-- The measurement constraints can then be used to compose different layout for different screen configuration.
-
-#Slot-based layouts:
-- Compose provides a large variety of composables based on Material Design.
-- Slots leave an empty space in the UI for the developer to fill as they wish.
-- Composables usually take a content composable lambda. Slot APIs expose multiple content parameters for specific uses.
-
------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Material Components and layouts (URL: https://developer.android.com/jetpack/compose/layouts/basics)
-
-Button
-Scaffold
-TopAppBar
-BottomAppBar
-BottomNavigation
-FloatingActionButton
-ExtendedFloatingActionButton
-Snackbars
-ModalDrawers
-BottomSheetScaffold
-ModalBottomSheetLayout
-BackdropScaffold
-
------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#Consuming the CompositionLocal
+- "CompositionLocalName.current" returns the value provided by the nearest CompositionLocalProvider that provides a value to that CompositionLocal. 
 
