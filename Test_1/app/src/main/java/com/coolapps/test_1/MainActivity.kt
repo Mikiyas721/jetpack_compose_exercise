@@ -22,6 +22,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.MeasureScope
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,7 +46,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview()
 @Composable
 fun Materials() {
     Button(
@@ -66,7 +69,6 @@ fun Materials() {
     )
 }
 
-@Preview()
 @Composable
 fun HomeScreen() {
     Surface(color = MaterialTheme.colors.background) {
@@ -175,3 +177,35 @@ fun StackedItems(imageSource: Int) {
         )
     }
 }
+
+@Composable
+fun MyBasicColumn(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Layout(modifier = modifier, content = content) { measurables, constraints ->
+        val placeables = measurables.map { measurable ->
+            measurable.measure(constraints)
+        }
+
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            var yPosition = 0
+            placeables.forEach { placeable ->
+                placeable.placeRelative(x = 0, y = yPosition)
+                yPosition += placeable.height
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun CallingComposable(modifier: Modifier = Modifier) {
+    MyBasicColumn(modifier.padding(8.dp)) {
+        Text("MyBasicColumn")
+        Text("places items")
+        Text("vertically.")
+        Text("We've done it by hand!")
+    }
+}
+

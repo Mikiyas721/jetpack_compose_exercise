@@ -45,7 +45,7 @@ any changes that only affects placement of items, not measurement, can be execut
 - Composables usually take a content composable lambda. Slot APIs expose multiple content parameters for specific uses.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Material Components and layouts (URL: https://developer.android.com/jetpack/compose/layouts/basics)
+#Material Components and layouts(URL: https://developer.android.com/jetpack/compose/layouts/basics)
 
 Button
 Scaffold
@@ -61,4 +61,67 @@ ModalBottomSheetLayout
 BackdropScaffold
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Custom layouts(URL: https://developer.android.com/jetpack/compose/layouts/custom)
+- Laying out each node in the UI tree is a three step process.
+   - Measure any children
+   - Decide its own size
+   - Place its children
+- Compose UI does not permit "multi-pass measurement". 
+This means that a layout element "may not" measure any of its children "more than once" in order to try different measurement configurations.
 
+#Using the layout modifier
+- You can use the "layout" modifier to modify how an element is measured and laid out.
+
+#Creating custom layouts
+- The "layout" modifier only changes the calling composable.
+- To measure and layout multiple composables, use the "Layout" composable instead.
+- Similarly to the lamda in the layout modifier, "measurables" is the list of children that need to be measured 
+and "constraints" are the constraints from the parent.
+
+#Layout direction
+- Also possible to use the "LocalLayoutDirection" composable.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Build adaptive layouts(URL: https://developer.android.com/jetpack/compose/layouts/adaptive)
+- Adaptive layout range from simple layout adjustments to fill up space, to changing layouts completely to make use of additional room.
+
+#Make large layout changes for root composables explicit
+- Avoid using physical, hardware values for making layout decisions.
+Instead, you should make decisions based on the actual portion of the screen that is allocated to your app,
+such as the current window metrics provided by the Jetpack "WindowManager" library. 
+
+#Flexible nested composables are reusable
+- For a non-root-level composable, we also shouldn’t use the current window metrics directly, in order to maximize reusability.
+- If a composables layout need to be changed independetly, we should use the width that the composable is actually given to render itself:
+   - "where" or "how" content is displayed  -> a collection of modifiers or a custom layout
+   - "what" content is displayed            -> "BoxWithConstraints"
+- "BoxWithConstraints" comes at the expense of adding more work during layout
+
+#Ensure all data is available for different sizes
+- Enough data should be provided to the composable so that the composable always has what it needs to display across any size, 
+even if some portion of the data might not always be used.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Alignment lines in Jetpack Compose(URL: https://developer.android.com/jetpack/compose/layouts/alignment-lines)
+#Creating custom alignment lines
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Intrinsic measurements in Compose layouts(URL: https://developer.android.com/jetpack/compose/layouts/intrinsic-measurements)
+- Intrinsics lets you query children before they're actually measured.
+- Asking for intrinsics measurements doesn't measure the children twice.
+
+#Intrinsics in action
+- "IntrinsicSize.Min", "IntrinsicSize.Min" can used to size its children being forced to be as tall or wide as their intrinsic size.
+- Applying "IntrinsicSize.Min" to say the height of a Row composable for example will size the Row to the maximum of the minIntrinsicHeight of its children.
+
+#Intrinsics in your custom layouts
+- To specify the instrinsics measures of your custom Layout composable, override the "minIntrinsicWidth", "minIntrinsicHeight", "maxIntrinsicWidth", 
+and "maxIntrinsicHeight" of the "MeasurePolicy interface" when creating it.
+- When creating your custom layout modifier, override the related methods in the "LayoutModifier interface".
+ 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+#ConstraintLayout in Compose(URL: https://developer.android.com/jetpack/compose/layouts/constraintlayout)
+- "ConstraintLayout" can help place composables relative to others on the screen, and is an alternative 
+to using multiple nested Row, Column, Box and custom layout elements.
+- Requires the addition of a dependency in the "build.gradle" file.
+- When needing to choose ConstraintLayout, consider if ConstraintLayout helps with the "readability" and "maintainability" of the composable.
