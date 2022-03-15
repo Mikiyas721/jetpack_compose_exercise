@@ -2,3 +2,68 @@
 ***** Theming *********
 ***********************
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Material Theming in Compose(URL: https://developer.android.com/jetpack/compose/themes/material)
+- Material Theming is a systematic way to customize Material Design to better reflect your product’s brand.
+- A MaterialTheme Composable contains:
+	- color
+    - typography  and 
+	- shape       attributes.
+- When you customize these attributes, your changes are automatically reflected in the components you use to build your app.
+
+#Color
+- Colors are modelled in Compose with the "Color" class.
+- You can define colors using "darkColors()" and "lightColors()"
+
+#Using theme colors
+- To retrive Colors provided by "MaterialTheme", MaterialTheme.colors.<colorKey>
+
+#Surface and content color
+- Many components accept a pair of color and content color.
+- "contentColorFor()" retrives the appropriate "on" color for any theme colors.
+- "LocalContentColor" to retrieve the preferred content color for the current background.
+
+#Content Alpha
+- You can specify a content alpha for a hierarchy by providing a value for "LocalContentAlpha".
+- Apply different levels of emphasis to text to visually communicate the information hierarchy. 
+- Material specifies some standard alpha values "high", "medium", "disabled" which are modelled by the ContentAlpha object.
+- MaterialTheme defaults LocalContentAlpha to "ContentAlpha.high".
+
+#Dark theme
+- "isSystemInDarkTheme()", "MaterialTheme.colors.isLight"
+
+#Elevation overlays
+- In Material, surfaces in dark themes with higher elevations receive "elevation overlays", which lightens their background.
+- These overlays are applied automatically by the "Surface" composable when using dark colors, and for any other Material composable which uses a surface.
+- For custom scenarios that don’t involve a Surface, use "LocalElevationOverlay".
+- To disable elevation overlays, provide null at the desired point in a composable hierarchy.4
+
+#Limited color accents
+- Material recommends applying limited color accents for dark themes by preferring the use of the surface color over the primary color in most cases.
+- For custom scenarios, use the "primarySurface" extension property
+
+#Typography
+- Compose implements the type system with the "Typography", "TextStyle", and font-related classes.
+
+#Using text styles
+- "MaterialTheme.typography.<textstyle>" to access textstyles.
+
+#Using shapes
+- "MaterialTheme.shapes.<shape>"
+
+#Material Design 3 and Material You
+- Jetpack Compose offers an implementation of Material Design 3, the next evolution of Material Design.
+- It requires addition of dependency to the build.gradle file.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Custom design systems in Compose(URL: https://developer.android.com/jetpack/compose/themes/custom)
+- There are several approaches to create a custom design system:
+	- Extending MaterialTheme
+	- Replacing one or more Material attributes
+	- Implementing a fully custom design system
+	
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Anatomy of a theme in Compose(URL: https://developer.android.com/jetpack/compose/themes/anatomy)
+
+
+
+
