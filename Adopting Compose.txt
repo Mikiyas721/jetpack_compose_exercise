@@ -3,8 +3,57 @@
 ********************************
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Navigating with Compose(URL: https://developer.android.com/jetpack/compose/navigation)
+- The Android Navigation component provides support for Jetpack Compose applications.
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Setup
+- To support navigation, dependency needs to be added app module’s build.gradle
+
+#Getting started
+- The "NavController" is the central API for the Navigation component.
+- You can create a NavController by using the "rememberNavController()" method in your composable.
+
+#Creating a NavHost
+- Each "NavController" must be associated with a single "NavHost" composable.
+- The NavHost links the NavController with a "navigation graph" that specifies the composable destinations.
+- Each composable destination in your navigation graph is associated with a "route", a String that defines the path to your composable.
+- "route" should be unique.
+- Creating the "NavHost" requires the NavController, the route of the starting destination of your graph and
+a lambda to construct the navigation graph.
+- Use "composable(route)" function by passing a lambda that emits the composable that corresponds to the route specified
+to create elements of the lambda that creates the navigation graph.
+
+#Navigate to a composable
+- To navigate to a composable, "navigationController.navigate(route)", where navigationController is the NavigationController instance.
+- You should only call "navigate()" as part of a callback and not as part of your composable itself,
+to avoid calling navigate() on every recomposition.
+- By default, navigate() adds your new destination to the back stack. 
+You can modify the behavior of navigate by attaching additional navigation options to our navigate():
+	- popUpTo(String) function   -> to pop routes up to the specified route
+		- inclusive parameter    -> to remove the specified route as well
+	- launchSingleTop            ->	to avoid multiple copies on the back stack
+
+#Navigate with arguments
+- You need to add argument placeholders to your route.
+- By default, all arguments are parsed as strings. 
+You can specify another type by using the "arguments" parameter of the "composable" function to set a type.
+- You should extract the NavArguments from the NavBackStackEntry that is available in the lambda of the composable() function.
+- To pass the argument to the destination, you need to add the value to the route in place of the placeholder in the call to "navigate()".
+
+#Adding optional arguments
+- Optional arguments differ from required arguments in two ways:
+	- They must be included using query parameter syntax ("?argName={argName}")
+	- They must have a defaultValue set, or have nullability = true
+
+#Deep links
+- Add them as a list using "navDeepLink()"
+- By default, these deep links are not exposed to external apps. 
+To make these deep links externally available you must add the appropriate "<intent-filter>" elements to your app’s "manifest.xml" file.
+- Navigation will automatically deep link into that composable when the deep link is triggered by another app.
+
+#Nested Navigation
+- Destinations can be grouped into a nested graph to "modularize" a particular flow in your app’s UI. 
+An example of this could be a self-contained login flow.
+- To add a nested graph to your NavHost, you can use the "navigation()" extension function:
 
 
 
