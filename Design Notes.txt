@@ -2,126 +2,195 @@
 ***** Design *********
 **********************
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Compose layout basics(URL: https://developer.android.com/jetpack/compose/layouts/basics)
+#Lists(URL: https://developer.android.com/jetpack/compose/lists)
+- Column can be scrollable by using the "verticalScroll()" modifier
 
-- Compose transforms state into UI by following these steps: 
-   State --> Composition --> Layout --> Drawing --> UI 
+#Lazy composables
+- Use "LazyColumn" and "LazyRow" for large number of items or list of unknown lenght.
+- These Composables lay out items that are currently visible in the view port.
+- These composables provide "LazyListScope" block instead of "content" block.
 
-#Goals of Layouts: 1. High Performance
-                   2. Ability to write custom layouts
+#LazyListScope DSL 
+- The DSL of "LazyListScope" provides a number of functions for describing items in the layout.
+At the most basic, item() adds a single "item", and "items(Int)" adds multiple items.
+- A variant of items(), "itemsIndexed()" which provides the index of the item at current iteration.
 
-- A composable function is a function emitting Unit that describes some part of your UI.
+#Content padding
+- The lazy components allow you to pass some PaddingValues to the "contentPadding" parameter.
+- Note that this padding is applied to the content, not the composable. 
 
-#Standard layout components: 1. Column -> Places items vertically
-                           2. Row    -> Places items horizontally
-                           3. Box    -> Places items on top of one another
+#Content spacing
+- "Arragnement.spaceBy()" can be used to apply space to content, by passing it to "verticalArrangment" or "horizontalArrangment" attributes
 
-- Column and Row children position are managed by arrangment along the axis of placement 
-and alignement along the crossaxis of placement, that is:
+#Item animationshttps://developer.android.com/reference/kotlin/androidx/compose/foundation/lazy/package-summary#LazyVerticalGrid(androidx.compose.foundation.lazy.GridCells,androidx.compose.ui.Modifier,androidx.compose.foundation.lazy.LazyListState,androidx.compose.foundation.layout.PaddingValues,kotlin.Function1)
+- The Lazy layouts do not yet animate its transition automatically.
 
-Column -> verticalArrangement and horizontalAlignement
-Row    -> horizontalArrangement and verticalAlignement
- 
-#The layout model: 
-- Each node is first asked to measure itself, then measure any children recursively, 
-passing size constraints down the tree to children. 
-- Then, leaf nodes are sized and placed, with the resolved sizes and placement instructions passed back up the tree.
+#Sticky Headers(experimental)
+- "stickyHeader()" function to provide the header content.
 
-#Performance: 
-- Compose achieves high performance by measuring child only onces.
+#Grids(experimental)
+- "LazyVerticalGrid()" composable for displating items in grid. "cells" parameter controls how cells are formed.
+- "cells" takes parameters like "GridCells.Adaptive()" or "GridCells.Fixed()" 
 
-- Since measurement and placement are distinct sub-phases of the layout pass, 
-any changes that only affects placement of items, not measurement, can be executed separately.
+#Reacting to scroll position
+- The lazy components support this use-case by hoisting the "LazyListState".
+- The "LazyListState" provides the "firstVisibleItemIndex" and "firstVisibleItemScrollOffset" properties
+- "LazyListState" also provides information about all of the items currently being displayed and their bounds on screen, via the "layoutInfo" property. 
 
-#Using modifiers in your layouts:
+#Controlling the scroll position
+- "LazyListState" supports this via the "scrollToItem()" function, which ‘immediately’ snaps the scroll position, and "animateScrollToItem()" 
+- Both "scrollToItem()" and "animateScrollToItem()" are suspending functions, which means that we need to invoke them in a "coroutine".
 
-#Responsive layouts:
-- In order to know the constraints coming from the parent and design the layout accordingly, you can use a BoxWithConstraints.
-- The measurement constraints can then be used to compose different layout for different screen configuration.
+#Large data-sets (paging)
+- Compose supports Paging 3.0 and later.
+- To display a list of paged content, we can use the "collectAsLazyPagingItems()" extension function, 
+and then pass in the returned "LazyPagingItems" to "items()" in our LazyColumn. 
+- You can display placeholders while data loads by checking if the item is null
+- If you use a RemoteMediator to fetch data from a "network service", make sure to provide "realistically sized placeholder" items.
 
-#Slot-based layouts:
-- Compose provides a large variety of composables based on Material Design.
-- Slots leave an empty space in the UI for the developer to fill as they wish.
-- Composables usually take a content composable lambda. Slot APIs expose multiple content parameters for specific uses.
-
------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Material Components and layouts(URL: https://developer.android.com/jetpack/compose/layouts/basics)
-
-Button
-Scaffold
-TopAppBar
-BottomAppBar
-BottomNavigation
-FloatingActionButton
-ExtendedFloatingActionButton
-Snackbars
-ModalDrawers
-BottomSheetScaffold
-ModalBottomSheetLayout
-BackdropScaffold
+#Item keys
+- Provide a stable and unique key for each item.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Custom layouts(URL: https://developer.android.com/jetpack/compose/layouts/custom)
-- Laying out each node in the UI tree is a three step process.
-   - Measure any children
-   - Decide its own size
-   - Place its children
-- Compose UI does not permit "multi-pass measurement". 
-This means that a layout element "may not" measure any of its children "more than once" in order to try different measurement configurations.
+#Text in Compose(URL: https://developer.android.com/jetpack/compose/text)
+- "BasicText" and "BasicTextField" | "Text" and "TextField"
 
-#Using the layout modifier
-- You can use the "layout" modifier to modify how an element is measured and laid out.
+#Display text from resource
+- "stringResource(R.string.xyz)"
 
-#Creating custom layouts
-- The "layout" modifier only changes the calling composable.
-- To measure and layout multiple composables, use the "Layout" composable instead.
-- Similarly to the lamda in the layout modifier, "measurables" is the list of children that need to be measured 
-and "constraints" are the constraints from the parent.
+#Styling text
+- parameters
+	- "color"
+	- "fontSize"
+	- "fontStyle"
+	- "fontWeight"
+    - "fontFamily"
+	
+#Working with fonts
+- "serif", "sans-serif", "monospace" and "cursive" are included by default.
+- Add .ttf file into res/font directory for custom fonts.
+	
+#Text alignments
+- "textAlign"
+- "TextAlign.start" and "TextAlign.end"   -> alphabet specific implementation
+- "TextAlign.left" and "TextAlign.right"  -> same result for all alphabets
 
-#Layout direction
-- Also possible to use the "LocalLayoutDirection" composable.
+#Multiple styles in a text
+- To set different styles within the same Text composable, you have to use an "AnnotatedString",
+a string that can be annotated with styles of arbitrary annotations:
+	- Text
+	- List of SpanStyleRange
+	- List of ParagraphStyleRange
+- "TextStyle" is for use in the Text composable , whereas "SpanStyle" and "ParagraphStyle" is for use in AnnotatedString.
+- Use "buildAnnotatedString()" function to create AnnotatedString" and "withStyle" to add Style.
+- "maxLines", "overflow"
+
+#User interactions
+#Selecting text
+- By default, composables aren’t selectable, which means by default users can't select and copy text from your app.
+- To enable text selection, you need to wrap your text elements with a "SelectionContainer" composable.
+- To disable part of a selectable text, you need to wrap the unselectable part with a "DisableSelection" composable.
+
+#Getting the position of a click on text
+- To listen for clicks on Text, you can add the "clickable modifier". 
+- However, if you’re looking to get the position of a click within a Text composable, you need to use a "ClickableText" instead.
+
+#Click with annotation
+- "pushStringAnnotations()" and add tag and annotation parameters as string 'URL' and the url respectively.
+Add "pop()" to stop annotation.
+
+#Entering and modifying text
+- "TextField" or "OutlinedTextField" at high level and "BasicTextField" at low level.
+
+#Styling TextField
+- Some basic parameters:
+	- "singleLine"
+    - "maxLines"
+    - "textStyle"
+	
+#Keyboard options
+- Some basic parameters:
+	- "capitalization"
+    - "autoCorrect"
+    - "keyboardType"
+    - "imeAction"
+
+#Formatting
+- Basic Visual transformations like replace with "*" and "-" every 4 digits for a credit card number
+
+#Cleaning input
+- To control the cursor position while cleaning text, use the "TextFieldValue" overload of TextField instead of passing a regular String.
+This overload allows you to change the "cursor position" as part of the state.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Build adaptive layouts(URL: https://developer.android.com/jetpack/compose/layouts/adaptive)
-- Adaptive layout range from simple layout adjustments to fill up space, to changing layouts completely to make use of additional room.
-
-#Make large layout changes for root composables explicit
-- Avoid using physical, hardware values for making layout decisions.
-Instead, you should make decisions based on the actual portion of the screen that is allocated to your app,
-such as the current window metrics provided by the Jetpack "WindowManager" library. 
-
-#Flexible nested composables are reusable
-- For a non-root-level composable, we also shouldn’t use the current window metrics directly, in order to maximize reusability.
-- If a composables layout need to be changed independetly, we should use the width that the composable is actually given to render itself:
-   - "where" or "how" content is displayed  -> a collection of modifiers or a custom layout
-   - "what" content is displayed            -> "BoxWithConstraints"
-- "BoxWithConstraints" comes at the expense of adding more work during layout
-
-#Ensure all data is available for different sizes
-- Enough data should be provided to the composable so that the composable always has what it needs to display across any size, 
-even if some portion of the data might not always be used.
+#Graphics in Compose(URL: https://developer.android.com/jetpack/compose/graphics)
+#Canvas
+- The Canvas automatically exposes a DrawScope.
+- In the Canvas content lambda, there are simple drawing functions:
+	- drawLine
+	- drawRect
+	- drawCircle
+	- rotate
+	- withTransform
+- Use "withTransform" to apply multiple transformations, instead of nesting calls to individual transformations.
+- "withTransform" takes a lambda that takes the different transformation functions.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Alignment lines in Jetpack Compose(URL: https://developer.android.com/jetpack/compose/layouts/alignment-lines)
-#Creating custom alignment lines
+#Gestures(URL: https://developer.android.com/jetpack/compose/gestures) 
+#Tapping and Pressing
+- "clickable" modifier allows click detection on the Composable it is applied to.
+- When more flexibility is required, use "pointerInput" modifier.
+- This modifier has a functions like "detectDragGesture", "detectTapGesture".
+- "detectTapGesture" has the following functions in its scope:
+	- onPress
+	- onDoubleTap
+	- onLongPress
+	- onTap
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Intrinsic measurements in Compose layouts(URL: https://developer.android.com/jetpack/compose/layouts/intrinsic-measurements)
-- Intrinsics lets you query children before they're actually measured.
-- Asking for intrinsics measurements doesn't measure the children twice.
+#Scrolling
+- The "verticalScroll" and "horizontalScroll" modifiers provide the simplest way to allow the user to scroll an element when the bounds of 
+its contents are larger than its maximum size constraints.
+- "rememberScrollState()" can be used for default parameters. It returns "ScrollState" object.
 
-#Intrinsics in action
-- "IntrinsicSize.Min", "IntrinsicSize.Min" can used to size its children being forced to be as tall or wide as their intrinsic size.
-- Applying "IntrinsicSize.Min" to say the height of a Row composable for example will size the Row to the maximum of the minIntrinsicHeight of its children.
+#Scrollable modifier
+- Detects scroll gesture but does not offset its content.
+- "ScrollableController" is required for this modifier to work properly.
 
-#Intrinsics in your custom layouts
-- To specify the instrinsics measures of your custom Layout composable, override the "minIntrinsicWidth", "minIntrinsicHeight", "maxIntrinsicWidth", 
-and "maxIntrinsicHeight" of the "MeasurePolicy interface" when creating it.
-- When creating your custom layout modifier, override the related methods in the "LayoutModifier interface".
- 
------------------------------------------------------------------------------------------------------------------------------------------------------------------ 
-#ConstraintLayout in Compose(URL: https://developer.android.com/jetpack/compose/layouts/constraintlayout)
-- "ConstraintLayout" can help place composables relative to others on the screen, and is an alternative 
-to using multiple nested Row, Column, Box and custom layout elements.
-- Requires the addition of a dependency in the "build.gradle" file.
-- When needing to choose ConstraintLayout, consider if ConstraintLayout helps with the "readability" and "maintainability" of the composable.
+#Nested Scrolling
+- Compose support nested scrolling, in which multiple elements react to a single scroll gesture.
+
+#Automatic nested scrolling
+- Gestures that initiate a scrolling action are propagated from children to parents automatically, 
+such that when the child can't scroll any further, the gesture is handled by its parent element.
+- Automatic nested scrolling is supported and provided out of the box by some of Compose's components and modifiers:
+"verticalScroll", "horizontalScroll", "scrollable", "Lazy" APIs and "TextField".
+
+#Using the nestedScroll modifier
+- "nestedScroll" modifier can be used to create an advanced coordinated scroll between multiple elements
+
+#Dragging
+- The "draggable" modifier is the high-level entry point to drag gestures in a single orientation, 
+and reports the drag distance in pixels.
+- Just like scrollable modifier, this modifier does not offset its children and it is not opinionated about its children's layout.
+- A lower level implementation of the draggable is to use "detectDragGesture()" function of the "pointerInput" modifier.
+
+#Swiping
+- The "swipeable" modifier lets you drag elements which, when released, animate towards typically two or more anchor points defined in an orientation.
+- "rememberSwipeableState()" has the following functions and more:
+	- snapTo
+    - animateTo
+    - performFling
+    - performDrag
+
+#Multitouch: Panning, zooming, rotating
+- To detect multitouch gestures used for panning, zooming and rotating, you can use the "transformable" modifier.
+- If you need to combine zooming, panning and rotation with other gestures, you can use the "PointerInputScope.detectTransformGestures" detector,
+that is "detectTransformGestures()" function with in the "pointerInput" modifier.
+
+
+
+
+
+
+
+
