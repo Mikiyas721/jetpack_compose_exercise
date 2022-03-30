@@ -122,7 +122,9 @@ fun HomePage(popularLocations: List<Location>, trips: List<Trip>) {
                 }
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 15.dp)
                 ) {
                     TabButton(isActiveTab = true, buttonLabel = "Popular", onClick = {})
                     TabButton(isActiveTab = false, buttonLabel = "Exclusive Tour", onClick = {})
@@ -137,7 +139,7 @@ fun HomePage(popularLocations: List<Location>, trips: List<Trip>) {
         ) {
             item {
                 LazyRow(
-                    modifier = Modifier.padding(vertical = 20.dp)
+                    modifier = Modifier.padding(top = 5.dp, bottom = 20.dp)
                 ) {
                     items(popularLocations) { item ->
                         LocationCard(item)
